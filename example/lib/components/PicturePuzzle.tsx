@@ -122,7 +122,6 @@ export default function PicturePuzzle({
     Animated.stagger(50 * (BASELINE_ROW_LENGTH / piecesPerRow), consecutivePieceOpacities.map(
       (consecutivePieceOpacity, i) => Animated.spring(consecutivePieceOpacity, {
         toValue: i === hidden ? 0 : 1,
-        friction: 9,
         overshootClamping: true,
         useNativeDriver: Platform.OS !== 'web',
       }),
@@ -133,8 +132,6 @@ export default function PicturePuzzle({
     if (hidden !== null && pieces.indexOf(hidden) < 0) {
       throw new Error(`[PicturePuzzle]: Expected hidden to resolve to a valid piece, but encountered ${hidden}.`);
     }
-    // TODO: Useful for testing.
-    //!!loaded && shouldGlobalAnimate();
   }, [hidden, pieces, loaded]);
 
   const onLoadStart = React.useCallback(() => setLoaded(false), [setLoaded]);
@@ -153,7 +150,7 @@ export default function PicturePuzzle({
   React.useEffect(() => {
     setTimeout(() => {
       typeof onChange === 'function' && onChange(
-        [...Array(4)].map((_, i) => i),
+        [...Array(9)].map((_, i) => i),
         0,
       );
     }, 3000);
@@ -204,11 +201,11 @@ export default function PicturePuzzle({
                     styles.absolute,
                     {
                       opacity,
+                      top: translate.x,
+                      left: translate.y,
                       transform: [
                         { scaleX: opacity },
                         { scaleY: opacity },
-                        { translateX: translate.x },
-                        { translateY: translate.y },
                       ],
                     },
                   ]}
