@@ -37,7 +37,7 @@ function shuffle(array) {
 export default function App() {
   const [hidden, setHidden] = React.useState<number | null>(0);
   const [pieces, setPieces] = React.useState<PuzzlePieces>(() => {
-    const [...p] = [...Array(64)].map((_, i) => i);
+    const [...p] = [...Array(9)].map((_, i) => i);
     shuffle(p);
     return p;
   });

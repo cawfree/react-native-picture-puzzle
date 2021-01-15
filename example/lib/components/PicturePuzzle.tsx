@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {
-  TouchableWithoutFeedback,
+  PanResponder,
   Platform,
   Image,
   Animated,
@@ -133,11 +133,15 @@ export default function PicturePuzzle({
 
   const onLoadStart = React.useCallback(() => setLoaded(false), [setLoaded]);
 
+  React.useEffect(() => {
+    shouldGlobalAnimate();
+  }, [source, loaded, piecesPerRow]);
+
   const onLoad = React.useCallback(() => {
     setTimeout(
       () => shouldDoubleBuffer(
         () => setLoaded(true),
-        shouldGlobalAnimate,
+        () => null,
       ),
       10,
     );
@@ -164,8 +168,19 @@ export default function PicturePuzzle({
     }).start();
   }, [animLoadOpacity, loaded]);
 
+  const panResponder = React.useMemo(() => PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gestureState): boolean => {
+      console.log(gestureState.moveX);
+      return false;
+    },
+    //onPanResponderMove: (_, gestureState) => {
+    //  console.log(gestureState);
+    //},
+  }), []);
+
   return (
     <Animated.View
+      {...panResponder.panHandlers}
       style={[
         StyleSheet.flatten(style),
         styles.noOverflow,
@@ -204,11 +219,13 @@ export default function PicturePuzzle({
                       styles.absolute,
                       {
                         opacity,
-                        left: translate.x,
-                        top: translate.y,
+                        //left: translate.x,
+                        //top: translate.y,
                         transform: [
                           { scaleX: opacity },
                           { scaleY: opacity },
+                          { translateX: translate.x },
+                          { translateY: translate.y },
                         ],
                       },
                     ] as ViewStyle}
@@ -217,9 +234,7 @@ export default function PicturePuzzle({
                     left={left}
                     right={right}
                   >
-                    <TouchableWithoutFeedback onPress={() => getMoveDirections(pieceNumber)}>
-                      <Image style={{width: size, height: size}} source={source} />
-                    </TouchableWithoutFeedback>
+                    <Image style={{width: size, height: size}} source={source} />
                   </ObscureView>
                 );
               }
