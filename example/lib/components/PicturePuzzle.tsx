@@ -59,7 +59,7 @@ export default function PicturePuzzle({
   }), [size];
   React.useEffect(() => throwOnInvalidPuzzlePieces(pieces), [pieces]);
 
-  const piecesPerRow = React.useMemo((): number => Math.sqrt(pieces.length), [pieces])
+  const piecesPerRow = React.useMemo((): number => Math.sqrt(pieces.length), [pieces.length])
 
   const pieceSize = React.useMemo((): number => (
     size / piecesPerRow
@@ -132,7 +132,7 @@ export default function PicturePuzzle({
     if (hidden !== null && pieces.indexOf(hidden) < 0) {
       throw new Error(`[PicturePuzzle]: Expected hidden to resolve to a valid piece, but encountered ${hidden}.`);
     }
-  }, [hidden, pieces, loaded]);
+  }, [hidden, pieces]);
 
   const onLoadStart = React.useCallback(() => setLoaded(false), [setLoaded]);
 
@@ -188,7 +188,7 @@ export default function PicturePuzzle({
         <Animated.View style={[StyleSheet.absoluteFill, {opacity: animLoadOpacity}]}>
           {typeof renderLoading === 'function' && renderLoading()}
         </Animated.View>
-        {!!loaded && consecutivePuzzlePieces.map(([...rowPieces], i) => (
+        {consecutivePuzzlePieces.map(([...rowPieces], i) => (
           <View style={[styles.row, styles.fullWidth]} key={`k${i}`}>
             {rowPieces.map((ObscuredPiece, j) => {
               const idx = i * piecesPerRow + j;

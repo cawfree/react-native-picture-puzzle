@@ -41,6 +41,9 @@ export default function App() {
     shuffle(p);
     return p;
   });
+  const source = React.useMemo(() => ({
+    uri: 'https://art.art/wp-content/uploads/2020/11/maxresdefault.jpg',
+  }), []);
   const renderLoading = React.useCallback((): JSX.Element => (
     <View style={[StyleSheet.absoluteFill, styles.center]}>
       <ActivityIndicator />
@@ -58,8 +61,8 @@ export default function App() {
         pieces={pieces}
         hidden={hidden}
         onChange={onChange}
-        size={500}
-        source={{uri: 'https://art.art/wp-content/uploads/2020/11/maxresdefault.jpg'}}
+        size={250}
+        source={source}
       />
       <Button onPress={() => requestAnimationFrame(() => setHidden(e => e + 1))} title="Inc" />
       <Button onPress={() => requestAnimationFrame(() => setHidden(e => e - 1))} title="Dec" />
