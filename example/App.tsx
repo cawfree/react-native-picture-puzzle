@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, ActivityIndicator, StyleSheet, View, Button } from 'react-native';
-import { PicturePuzzle } from './lib';
+import { PicturePuzzle, PuzzlePieces } from './lib';
 
 const styles = StyleSheet.create({
   center: {
@@ -33,17 +33,23 @@ function shuffle(array) {
   }
 }
 
-const pieces = [...Array(16)].map((_, i) => i);
-shuffle(pieces);
-console.log(pieces);
 
 export default function App() {
-  const [hidden, setHidden] = React.useState<number>(0);
+  const [hidden, setHidden] = React.useState<number | null>(0);
+  const [pieces, setPieces] = React.useState<PuzzlePieces>(() => {
+    const [...p] = [...Array(64)].map((_, i) => i);
+    shuffle(p);
+    return p;
+  });
   const renderLoading = React.useCallback((): JSX.Element => (
     <View style={[StyleSheet.absoluteFill, styles.center]}>
       <ActivityIndicator />
     </View>
   ), []);
+  const onChange = React.useCallback((nextPieces: PuzzlePieces, nextHidden: number | null): void => {
+    setPieces(nextPieces);
+    setHidden(nextHidden);
+  }, [setPieces, setHidden]);
   return (
     <View style={styles.container}>
       <PicturePuzzle
@@ -51,6 +57,7 @@ export default function App() {
         renderLoading={renderLoading}
         pieces={pieces}
         hidden={hidden}
+        onChange={onChange}
         size={500}
         source={{uri: 'https://art.art/wp-content/uploads/2020/11/maxresdefault.jpg'}}
       />

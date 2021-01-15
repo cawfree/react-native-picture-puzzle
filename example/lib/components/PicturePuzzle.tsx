@@ -17,11 +17,12 @@ import { throwOnInvalidPuzzlePieces, shouldDoubleBuffer } from '../constants';
 const BASELINE_ROW_LENGTH = 3;
 
 export type PicturePuzzleProps = ImageProps & {
-  readonly hidden: number;
+  readonly hidden: number | null;
   readonly size: number;
   readonly pieces: PuzzlePieces;
   readonly source: ImageURISource | number;
   readonly renderLoading?: () => JSX.Element;
+  readonly onChange?: (nextPieces: PuzzlePieces, nextHidden: number | null) => void;
 };
 
 const styles = StyleSheet.create({
@@ -40,6 +41,7 @@ export default function PicturePuzzle({
   source,
   hidden,
   renderLoading,
+  onChange,
 }: PicturePuzzleProps): JSX.Element {
   const [loaded, setLoaded] = React.useState<boolean>(false);
   React.useEffect(() => {
@@ -57,7 +59,7 @@ export default function PicturePuzzle({
   }), [size];
   React.useEffect(() => throwOnInvalidPuzzlePieces(pieces), [pieces]);
 
-  const piecesPerRow = React.useMemo((): number => Math.sqrt(pieces.length), [size])
+  const piecesPerRow = React.useMemo((): number => Math.sqrt(pieces.length), [pieces])
 
   const pieceSize = React.useMemo((): number => (
     size / piecesPerRow
@@ -80,7 +82,7 @@ export default function PicturePuzzle({
         }
       ))
     ))
-  }, [size, source, piecesPerRow]);
+  }, [size, source, pieces.length, piecesPerRow]);
 
   const consecutivePieceOpacities = React.useMemo(() => ( /* new on pieces delta */
     [...Array(pieces.length)].map(() => new Animated.Value(0))
@@ -104,10 +106,17 @@ export default function PicturePuzzle({
   }, [pieces, piecesPerRow]);
 
   React.useEffect(() => {
-    consecutivePieceTranslations.map((consecutivePieceTranslation, i) => {
-      consecutivePieceTranslation.setValue(calculatePieceOffset(i));
-    });
-  }, [pieces, calculatePieceOffset, consecutivePieceTranslations]);
+    Animated.parallel(consecutivePieceTranslations.map(
+      (consecutivePieceTranslation, i) => Animated.timing(
+        consecutivePieceTranslation,
+        {
+          toValue: calculatePieceOffset(i),
+          duration: loaded ? 100 : 0,
+          useNativeDriver: Platform.OS !== 'web',
+        },
+      ),
+    )).start();
+  }, [loaded, pieces, calculatePieceOffset, consecutivePieceTranslations]);
 
   const shouldGlobalAnimate = React.useCallback(() => {
     Animated.stagger(50 * (BASELINE_ROW_LENGTH / piecesPerRow), consecutivePieceOpacities.map(
@@ -121,12 +130,14 @@ export default function PicturePuzzle({
   }, [piecesPerRow, consecutivePieceOpacities, hidden]);
 
   React.useEffect(() => { /* validate */
-    if (pieces.indexOf(hidden) < 0) {
+    if (hidden !== null && pieces.indexOf(hidden) < 0) {
       throw new Error(`[PicturePuzzle]: Expected hidden to resolve to a valid piece, but encountered ${hidden}.`);
     }
     // TODO: Useful for testing.
     //!!loaded && shouldGlobalAnimate();
   }, [hidden, pieces, loaded]);
+
+  const onLoadStart = React.useCallback(() => setLoaded(false), [setLoaded]);
 
   const onLoad = React.useCallback(() => {
     setTimeout(
@@ -137,6 +148,16 @@ export default function PicturePuzzle({
       10,
     );
   }, [setLoaded, shouldGlobalAnimate]);
+
+  // test code
+  React.useEffect(() => {
+    setTimeout(() => {
+      typeof onChange === 'function' && onChange(
+        [...Array(4)].map((_, i) => i),
+        0,
+      );
+    }, 3000);
+  }, [onChange]);
   
   const animLoadOpacity = React.useMemo(() => new Animated.Value(1), []);
 
@@ -157,17 +178,16 @@ export default function PicturePuzzle({
       ]}
     >
       <View style={StyleSheet.absoluteFill}>
-        {!loaded && (
-          <Image
-            style={[
-              {width: size, height: size },
-              styles.absolute,
-              styles.invisible,
-            ]}
-            source={source}
-            onLoad={onLoad}
-          />
-        )}
+        <Image
+          style={[
+            {width: size, height: size },
+            styles.absolute,
+            styles.invisible,
+          ]}
+          source={source}
+          onLoadStart={onLoadStart}
+          onLoad={onLoad}
+        />
         <Animated.View style={[StyleSheet.absoluteFill, {opacity: animLoadOpacity}]}>
           {typeof renderLoading === 'function' && renderLoading()}
         </Animated.View>
@@ -180,20 +200,18 @@ export default function PicturePuzzle({
               return (
                 <ObscuredPiece
                   key={`k${j}`}
-                  style={{
-                    opacity,
-                    // test
-                    position: 'absolute',
-                    left: translate.x,
-                    top: translate.y,
-
-                    transform: [
-                      {scaleX: opacity},
-                      {scaleY: opacity},
-                      //{translateX: translate.x},
-                      //{translateY: translate.y},
-                    ],
-                  }}
+                  style={[
+                    styles.absolute,
+                    {
+                      opacity,
+                      transform: [
+                        { scaleX: opacity },
+                        { scaleY: opacity },
+                        { translateX: translate.x },
+                        { translateY: translate.y },
+                      ],
+                    },
+                  ]}
                 />
               );
             })}
