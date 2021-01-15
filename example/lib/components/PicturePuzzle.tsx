@@ -117,6 +117,7 @@ export default function PicturePuzzle({
 
   const shouldGlobalAnimate = React.useCallback(() => {
     Animated.stagger(50 * (BASELINE_ROW_LENGTH / piecesPerRow), consecutivePieceOpacities.map(
+      // TODO: It is wrong to connect pieceOpacity with scaling
       (consecutivePieceOpacity, i) => Animated.spring(consecutivePieceOpacity, {
         toValue: i === hidden ? 0 : 1,
         overshootClamping: true,
@@ -135,7 +136,7 @@ export default function PicturePuzzle({
 
   React.useEffect(() => {
     shouldGlobalAnimate();
-  }, [source, loaded, piecesPerRow]);
+  }, [source, loaded, piecesPerRow, hidden]);
 
   const onLoad = React.useCallback(() => {
     setTimeout(
@@ -170,7 +171,8 @@ export default function PicturePuzzle({
 
   const panResponder = React.useMemo(() => PanResponder.create({
     onMoveShouldSetPanResponder: (_, gestureState): boolean => {
-      console.log(gestureState.moveX);
+      const {moveX, moveY} = gestureState;
+      console.log(moveX, moveY);
       return false;
     },
     //onPanResponderMove: (_, gestureState) => {
