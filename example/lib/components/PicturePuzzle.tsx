@@ -1,5 +1,6 @@
 import * as React from 'react';
 import {
+  TouchableWithoutFeedback,
   Platform,
   Image,
   Animated,
@@ -7,10 +8,11 @@ import {
   ImageProps,
   ImageURISource,
   View,
+  ViewStyle,
  } from 'react-native';
 
 import ObscureView from './ObscureView';
-import { PuzzlePieces } from '../types';
+import { PuzzlePieces, MoveDirection } from '../types';
 import { throwOnInvalidPuzzlePieces, shouldDoubleBuffer } from '../constants';
 
 // Used to describe animations using the length of the row as a metric.
@@ -65,35 +67,17 @@ export default function PicturePuzzle({
     size / piecesPerRow
   ), [size, piecesPerRow]);
 
-  const consecutivePuzzlePieces = React.useMemo((): readonly React.ElementType[][] => {
-    return [...Array(piecesPerRow)].map((_, i) => (
-      [...Array(piecesPerRow)].map((_, j) => (
-        /* <ObscuredPiece /> */
-        (props) => {
-          const top = -i * pieceSize;
-          const bottom = (-i * pieceSize) + pieceSize;
-          const left = -j * pieceSize;
-          const right = (-j * pieceSize) + pieceSize;
-          return (
-            <ObscureView {...props} top={top} bottom={bottom} left={left} right={right}>
-              <Image style={{width: size, height: size}} source={source} />
-            </ObscureView>
-          );
-        }
-      ))
-    ))
-  }, [size, source, pieces.length, piecesPerRow]);
-
-  const consecutivePieceOpacities = React.useMemo(() => ( /* new on pieces delta */
+  const consecutivePieceOpacities = React.useMemo(() => (
     [...Array(pieces.length)].map(() => new Animated.Value(0))
   ), [pieces.length]);
 
-  const consecutivePieceTranslations = React.useMemo(() => ( /* new on pieces delta */
+  const consecutivePieceTranslations = React.useMemo(() => (
     [...Array(pieces.length)].map(() => new Animated.ValueXY({
       x: 0,
       y: 0,
     }))
   ), [pieces.length]);
+
 
   const calculatePieceOffset = React.useCallback((pieceNumber: number): {
     readonly x: number;
@@ -103,6 +87,11 @@ export default function PicturePuzzle({
     const x = (i % piecesPerRow) * pieceSize;
     const y = Math.floor(i / piecesPerRow) * pieceSize;
     return {x, y};
+  }, [pieces, piecesPerRow]);
+
+  const getMoveDirections = React.useCallback((pieceNumber: number): readonly MoveDirection[] => {
+    console.log('get moves for', pieceNumber)
+    return [];
   }, [pieces, piecesPerRow]);
 
   React.useEffect(() => {
@@ -150,7 +139,7 @@ export default function PicturePuzzle({
   React.useEffect(() => {
     setTimeout(() => {
       typeof onChange === 'function' && onChange(
-        [...Array(9)].map((_, i) => i),
+        [...Array(16)].map((_, i) => i),
         0,
       );
     }, 3000);
@@ -188,30 +177,44 @@ export default function PicturePuzzle({
         <Animated.View style={[StyleSheet.absoluteFill, {opacity: animLoadOpacity}]}>
           {typeof renderLoading === 'function' && renderLoading()}
         </Animated.View>
-        {consecutivePuzzlePieces.map(([...rowPieces], i) => (
+        {[...Array(piecesPerRow)].map((_, i) => (
           <View style={[styles.row, styles.fullWidth]} key={`k${i}`}>
-            {rowPieces.map((ObscuredPiece, j) => {
-              const idx = i * piecesPerRow + j;
-              const opacity = consecutivePieceOpacities[idx];
-              const translate = consecutivePieceTranslations[idx];
-              return (
-                <ObscuredPiece
-                  key={`k${j}`}
-                  style={[
-                    styles.absolute,
-                    {
-                      opacity,
-                      left: translate.x,
-                      top: translate.y,
-                      transform: [
-                        { scaleX: opacity },
-                        { scaleY: opacity },
-                      ],
-                    },
-                  ]}
-                />
-              );
-            })}
+            {[...Array(piecesPerRow)].map((_, j) => {
+                const idx = i * piecesPerRow + j;
+                const opacity = consecutivePieceOpacities[idx];
+                const translate = consecutivePieceTranslations[idx];
+                const top = -i * pieceSize;
+                const bottom = (-i * pieceSize) + pieceSize;
+                const left = -j * pieceSize;
+                const right = (-j * pieceSize) + pieceSize;
+                const pieceNumber = (i * piecesPerRow) + j;
+                return (
+                  <ObscureView
+                    key={`k${j}`}
+                    style={[
+                      styles.absolute,
+                      {
+                        opacity,
+                        left: translate.x,
+                        top: translate.y,
+                        transform: [
+                          { scaleX: opacity },
+                          { scaleY: opacity },
+                        ],
+                      },
+                    ] as ViewStyle}
+                    top={top} 
+                    bottom={bottom}
+                    left={left}
+                    right={right}
+                  >
+                    <TouchableWithoutFeedback onPress={() => getMoveDirections(pieceNumber)}>
+                      <Image style={{width: size, height: size}} source={source} />
+                    </TouchableWithoutFeedback>
+                  </ObscureView>
+                );
+              }
+            )}
           </View>
         ))}
       </View>

@@ -39,6 +39,7 @@ export default function App() {
   const [pieces, setPieces] = React.useState<PuzzlePieces>(() => {
     const [...p] = [...Array(64)].map((_, i) => i);
     shuffle(p);
+    console.log(p);
     return p;
   });
   const source = React.useMemo(() => ({
