@@ -20,7 +20,7 @@ export default function throwOnInvalidPuzzlePieces(pieces: PuzzlePieces): void {
   }
 
   // @ts-ignore
-  const [...sortedPieces] = pieces.sort((a: number, b: number): number => a - b);
+  const [...sortedPieces] = [...pieces].sort((a: number, b: number): number => a - b);
   if (sortedPieces[0] !== 0) {
     throw new Error('[PicturePuzzle]: Pieces must be zero indexed.');
   }

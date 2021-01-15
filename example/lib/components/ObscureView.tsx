@@ -11,11 +11,8 @@ export type ObscureViewProps = {
 };
 
 const styles = StyleSheet.create({
-  absolute: { position: 'absolute' },
-  container: {
-    borderWidth: 1,
-    overflow: 'hidden',
-  }
+  absolute: {position: 'absolute'},
+  container: {overflow: 'hidden'}
 });
 
 export default function ObscureView({
