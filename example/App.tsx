@@ -50,7 +50,7 @@ export default function App() {
     </View>
   ), []);
   const onChange = React.useCallback((nextPieces: PuzzlePieces, nextHidden: number | null): void => {
-    setPieces(nextPieces);
+    setPieces([...nextPieces]);
     setHidden(nextHidden);
   }, [setPieces, setHidden]);
   return (

@@ -201,11 +201,11 @@ export default function PicturePuzzle({
                     styles.absolute,
                     {
                       opacity,
-                      top: translate.x,
-                      left: translate.y,
                       transform: [
                         { scaleX: opacity },
                         { scaleY: opacity },
+                        { translateX: translate.x },
+                        { translateY: translate.y },
                       ],
                     },
                   ]}
