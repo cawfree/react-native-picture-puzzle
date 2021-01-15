@@ -78,11 +78,10 @@ export default function PicturePuzzle({
     }))
   ), [pieces.length]);
 
-
   const calculatePieceOffset = React.useCallback((pieceNumber: number): {
     readonly x: number;
     readonly y: number;
-  } => { /* look at supplied array and compute required delta */
+  } => {
     const i = pieces.indexOf(pieceNumber);
     const x = (i % piecesPerRow) * pieceSize;
     const y = Math.floor(i / piecesPerRow) * pieceSize;
@@ -90,9 +89,18 @@ export default function PicturePuzzle({
   }, [pieces, piecesPerRow]);
 
   const getMoveDirections = React.useCallback((pieceNumber: number): readonly MoveDirection[] => {
-    console.log('get moves for', pieceNumber)
-    return [];
-  }, [pieces, piecesPerRow]);
+    const i = pieces.indexOf(pieceNumber);
+    const bottom = i + piecesPerRow;
+    const left = i - 1;
+    const right = i + 1;
+    const top = i - piecesPerRow;
+    return [
+      pieces[bottom] === hidden && MoveDirection.BOTTOM,
+      pieces[left] === hidden && MoveDirection.LEFT,
+      pieces[right] === hidden && MoveDirection.RIGHT,
+      pieces[top] === hidden && MoveDirection.TOP,
+    ].filter(e => !!e) as readonly MoveDirection[];
+  }, [pieces, piecesPerRow, hidden]);
 
   React.useEffect(() => {
     Animated.parallel(consecutivePieceTranslations.map(
@@ -138,6 +146,7 @@ export default function PicturePuzzle({
   // test code
   React.useEffect(() => {
     setTimeout(() => {
+      // TODO: if onChange undefined, repeat the replacement animation 
       typeof onChange === 'function' && onChange(
         [...Array(16)].map((_, i) => i),
         0,
