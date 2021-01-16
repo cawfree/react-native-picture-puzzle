@@ -1,5 +1,5 @@
 # react-native-picture-puzzle
-⚛️ 🧩  A picture puzzle component.
+⚛️ 🧩  A picture puzzle component. Supports [**Android**](https://reactnative.dev), [**iOS**](https://reactnative.dev) and the [**Web**](https://github.com/necolas/react-native-web).
 
 <p align="center">
   <img src="./public/logo.png"></img>
