@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, ActivityIndicator, StyleSheet, View, Button } from 'react-native';
+import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, View, Button } from 'react-native';
 import { PicturePuzzle, PuzzlePieces } from './lib';
 
 const styles = StyleSheet.create({
@@ -18,8 +18,8 @@ const styles = StyleSheet.create({
       width: 2,
       height: 2,
     },
-    shadowOpacity: 0.5,
-    shadowRadius: 5.0,
+    shadowOpacity: 0.9,
+    shadowRadius: 10.0,
   },
 });
 
@@ -32,16 +32,19 @@ function shuffle(array) {
   }
 }
 
-
 export default function App() {
-  const [hidden, setHidden] = React.useState<number | null>(0);
-  const [pieces, setPieces] = React.useState<PuzzlePieces>(() => {
-    const [...p] = [...Array(16)].map((_, i) => i);
+  const originalPieces = React.useMemo<PuzzlePieces>(() => (
+    [...Array(16)].map((_, i) => i)
+  ), []);
+  const shuffledPieces = React.useMemo<PuzzlePieces>(() => {
+    const p = [...originalPieces];
     shuffle(p);
     return p;
-  });
+  }, [originalPieces]);
+  const [hidden, setHidden] = React.useState<number | null>(0);
+  const [pieces, setPieces] = React.useState<PuzzlePieces>(shuffledPieces);
   const source = React.useMemo(() => ({
-    uri: 'https://art.art/wp-content/uploads/2020/11/maxresdefault.jpg',
+    uri: 'https://static.tvtropes.org/pmwiki/pub/images/big_l_6.jpg',
   }), []);
   const renderLoading = React.useCallback((): JSX.Element => (
     <View style={[StyleSheet.absoluteFill, styles.center]}>
@@ -52,6 +55,14 @@ export default function App() {
     setPieces([...nextPieces]);
     setHidden(nextHidden);
   }, [setPieces, setHidden]);
+  const solve = React.useCallback(() => {
+    setPieces(originalPieces);
+    setHidden(null);
+  }, [setPieces, originalPieces]);
+  const retry = React.useCallback(() => {
+    setPieces(shuffledPieces);
+    setHidden(0);
+  }, [setPieces, shuffledPieces]);
   return (
     <View style={[styles.container, styles.center]}>
       <PicturePuzzle
@@ -72,10 +83,19 @@ export default function App() {
             time wasted by @cawfree
           </Text>
         </View>
+        <View style={styles.row}>
+          <TouchableOpacity onPress={retry}>
+            <Text style={{color: 'blue', marginRight: 5}}>
+              retry
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={solve}>
+            <Text style={{color: 'blue'}}>
+              solve
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      {false && <Button onPress={() => requestAnimationFrame(() => setHidden(e => e + 1))} title="Inc" />}
-      {false && <Button onPress={() => requestAnimationFrame(() => setHidden(e => e - 1))} title="Dec" />}
-      {false && <Text>{`hidden ${hidden}`}</Text>}
     </View>
   );
 }

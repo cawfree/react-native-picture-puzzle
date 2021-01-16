@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {
-  PanResponder,
+  TouchableWithoutFeedback,
   Platform,
   Image,
   Animated,
@@ -8,6 +8,7 @@ import {
   ImageProps,
   ImageURISource,
   View,
+  PixelRatio,
   ViewStyle,
  } from 'react-native';
 
@@ -63,9 +64,10 @@ export default function PicturePuzzle({
 
   const piecesPerRow = React.useMemo((): number => Math.sqrt(pieces.length), [pieces.length])
 
-  const pieceSize = React.useMemo((): number => (
-    Math.floor(size / piecesPerRow)
-  ), [size, piecesPerRow]);
+  const pieceSize = React.useMemo((): number => {
+    const baseSize = size / piecesPerRow;
+    return baseSize - baseSize % PixelRatio.get();
+  }, [size, piecesPerRow]);
 
   const consecutivePieceOpacities = React.useMemo(() => (
     [...Array(pieces.length)].map(() => new Animated.Value(0))
@@ -147,17 +149,6 @@ export default function PicturePuzzle({
     );
   }, [setLoaded, shouldGlobalAnimate]);
 
-  // test code
-  React.useEffect(() => {
-    setTimeout(() => {
-      // TODO: if onChange undefined, repeat the replacement animation 
-      typeof onChange === 'function' && onChange(
-        [...Array(16)].map((_, i) => i),
-        0,
-      );
-    }, 3000);
-  }, [onChange]);
-  
   const animLoadOpacity = React.useMemo(() => new Animated.Value(1), []);
 
   React.useEffect(() => {
@@ -168,22 +159,37 @@ export default function PicturePuzzle({
     }).start();
   }, [animLoadOpacity, loaded]);
 
-  const panResponder = React.useMemo(() => PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gestureState): boolean => {
-      const {moveX, moveY} = gestureState;
-      console.log(moveX, moveY);
-      return false;
-    },
-    //onPanResponderMove: (_, gestureState) => {
-    //  console.log(gestureState);
-    //},
-  }), []);
+  const getNextPieceIndex = React.useCallback((pieceNumber: number, direction: MoveDirection): number => {
+    const idx = pieces.indexOf(pieceNumber);
+    if (direction === MoveDirection.LEFT) {
+      return idx - 1;
+    } else if (direction === MoveDirection.RIGHT) {
+      return idx + 1;
+    } else if (direction === MoveDirection.TOP) {
+      return idx - piecesPerRow;
+    } else if (direction === MoveDirection.BOTTOM) {
+      return idx + piecesPerRow;
+    }
+  }, [pieces, piecesPerRow]);
+
+  const shouldMovePiece = React.useCallback((pieceNumber: number) => {
+    const maybeDirections = getMoveDirections(pieceNumber);
+    if (maybeDirections.length) {
+      const [direction] = maybeDirections;
+      const idx = pieces.indexOf(pieceNumber);
+      const nextPieceIndex = getNextPieceIndex(pieceNumber, direction);
+      // Update callback array.
+      const nextPieces = [...pieces];
+      nextPieces[idx] = nextPieces[nextPieceIndex];
+      nextPieces[nextPieceIndex] = pieceNumber;
+      onChange(nextPieces, nextPieces[idx]);
+    }
+  }, [getMoveDirections, pieces, onChange, hidden, getNextPieceIndex]);
 
   const actualSize = pieceSize * piecesPerRow;
 
   return (
     <Animated.View
-      {...panResponder.panHandlers}
       style={[
         StyleSheet.flatten(style),
         styles.noOverflow,
@@ -235,7 +241,12 @@ export default function PicturePuzzle({
                     left={left}
                     right={right}
                   >
-                    <Image style={{width: actualSize, height: actualSize}} source={source} />
+                    <TouchableWithoutFeedback onPress={() => shouldMovePiece(pieceNumber)}>
+                      <Image
+                        style={{width: actualSize, height: actualSize}}
+                        source={source}
+                      />
+                    </TouchableWithoutFeedback>
                   </ObscureView>
                 );
               }
