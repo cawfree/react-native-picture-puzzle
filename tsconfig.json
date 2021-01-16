@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "declaration": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["dom", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "removeComments": true,
+    "resolveJsonModule": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "strict": true,
+    "target": "esnext",
+    "jsx": "react",
+    "outDir": "dist"
+  },
+  "include": ["./src"],
+  "exclude": ["./example", "./node_modules/"]
+}

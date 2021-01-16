@@ -14,7 +14,7 @@ import {
 
 import ObscureView from './ObscureView';
 import { PuzzlePieces, MoveDirection } from '../types';
-import { throwOnInvalidPuzzlePieces, shouldDoubleBuffer } from '../constants';
+import { throwOnInvalidPuzzlePieces } from '../constants';
 
 // Used to describe animations using the length of the row as a metric.
 const BASELINE_ROW_LENGTH = 3;
@@ -140,11 +140,8 @@ export default function PicturePuzzle({
   }, [source, loaded, piecesPerRow, hidden]);
 
   const onLoad = React.useCallback(() => {
-    setTimeout(
-      () => shouldDoubleBuffer(
-        () => setLoaded(true),
-        () => null,
-      ),
+    window.setTimeout(
+      () => window.requestAnimationFrame(() => setLoaded(true)),
       10,
     );
   }, [setLoaded, shouldGlobalAnimate]);
@@ -170,6 +167,7 @@ export default function PicturePuzzle({
     } else if (direction === MoveDirection.BOTTOM) {
       return idx + piecesPerRow;
     }
+    return idx;
   }, [pieces, piecesPerRow]);
 
   const shouldMovePiece = React.useCallback((pieceNumber: number) => {
@@ -182,7 +180,7 @@ export default function PicturePuzzle({
       const nextPieces = [...pieces];
       nextPieces[idx] = nextPieces[nextPieceIndex];
       nextPieces[nextPieceIndex] = pieceNumber;
-      onChange(nextPieces, nextPieces[idx]);
+      typeof onChange === 'function' && onChange(nextPieces, nextPieces[idx]);
     }
   }, [getMoveDirections, pieces, onChange, hidden, getNextPieceIndex]);
 
