@@ -64,7 +64,7 @@ export default function PicturePuzzle({
   const piecesPerRow = React.useMemo((): number => Math.sqrt(pieces.length), [pieces.length])
 
   const pieceSize = React.useMemo((): number => (
-    size / piecesPerRow
+    Math.floor(size / piecesPerRow)
   ), [size, piecesPerRow]);
 
   const consecutivePieceOpacities = React.useMemo(() => (
@@ -104,23 +104,22 @@ export default function PicturePuzzle({
 
   React.useEffect(() => {
     Animated.parallel(consecutivePieceTranslations.map(
-      (consecutivePieceTranslation, i) => Animated.timing(
+      (consecutivePieceTranslation, i) => Animated.spring(
         consecutivePieceTranslation,
         {
           toValue: calculatePieceOffset(i),
-          duration: loaded ? 100 : 0,
+          //duration: loaded ? 350 : 0,
           useNativeDriver: Platform.OS !== 'web',
         },
       ),
     )).start();
-  }, [loaded, pieces, calculatePieceOffset, consecutivePieceTranslations]);
+  }, [loaded, pieces, calculatePieceOffset, consecutivePieceTranslations, piecesPerRow]);
 
   const shouldGlobalAnimate = React.useCallback(() => {
     Animated.stagger(50 * (BASELINE_ROW_LENGTH / piecesPerRow), consecutivePieceOpacities.map(
       // TODO: It is wrong to connect pieceOpacity with scaling
       (consecutivePieceOpacity, i) => Animated.spring(consecutivePieceOpacity, {
         toValue: i === hidden ? 0 : 1,
-        overshootClamping: true,
         useNativeDriver: Platform.OS !== 'web',
       }),
     )).start()
@@ -180,19 +179,21 @@ export default function PicturePuzzle({
     //},
   }), []);
 
+  const actualSize = pieceSize * piecesPerRow;
+
   return (
     <Animated.View
       {...panResponder.panHandlers}
       style={[
         StyleSheet.flatten(style),
         styles.noOverflow,
-        {width: size, height: size},
+        {width: actualSize, height: actualSize},
       ]}
     >
       <View style={StyleSheet.absoluteFill}>
         <Image
           style={[
-            {width: size, height: size },
+            {width: actualSize, height: actualSize },
             styles.absolute,
             styles.invisible,
           ]}
@@ -221,8 +222,6 @@ export default function PicturePuzzle({
                       styles.absolute,
                       {
                         opacity,
-                        //left: translate.x,
-                        //top: translate.y,
                         transform: [
                           { scaleX: opacity },
                           { scaleY: opacity },
@@ -236,7 +235,7 @@ export default function PicturePuzzle({
                     left={left}
                     right={right}
                   >
-                    <Image style={{width: size, height: size}} source={source} />
+                    <Image style={{width: actualSize, height: actualSize}} source={source} />
                   </ObscureView>
                 );
               }

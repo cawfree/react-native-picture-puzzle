@@ -9,10 +9,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: 'white',
   },
+  row: { flexDirection: 'row', justifyContent: 'flex-end'},
   shadow: {
     shadowColor: "#000",
     shadowOffset: {
@@ -37,7 +36,7 @@ function shuffle(array) {
 export default function App() {
   const [hidden, setHidden] = React.useState<number | null>(0);
   const [pieces, setPieces] = React.useState<PuzzlePieces>(() => {
-    const [...p] = [...Array(9)].map((_, i) => i);
+    const [...p] = [...Array(16)].map((_, i) => i);
     shuffle(p);
     return p;
   });
@@ -54,19 +53,29 @@ export default function App() {
     setHidden(nextHidden);
   }, [setPieces, setHidden]);
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, styles.center]}>
       <PicturePuzzle
         style={styles.shadow}
         renderLoading={renderLoading}
         pieces={pieces}
         hidden={hidden}
         onChange={onChange}
-        size={250}
+        size={290}
         source={source}
       />
-      <Button onPress={() => requestAnimationFrame(() => setHidden(e => e + 1))} title="Inc" />
-      <Button onPress={() => requestAnimationFrame(() => setHidden(e => e - 1))} title="Dec" />
-      <Text>{`hidden ${hidden}`}</Text>
+      <View>
+        <Text style={{color: 'black', fontSize: 24, paddingTop: 5}}>
+          react-native-picture-puzzle
+        </Text>
+        <View style={styles.row}>
+          <Text style={{color: 'black'}}>
+            time wasted by @cawfree
+          </Text>
+        </View>
+      </View>
+      {false && <Button onPress={() => requestAnimationFrame(() => setHidden(e => e + 1))} title="Inc" />}
+      {false && <Button onPress={() => requestAnimationFrame(() => setHidden(e => e - 1))} title="Dec" />}
+      {false && <Text>{`hidden ${hidden}`}</Text>}
     </View>
   );
 }
