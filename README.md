@@ -2,7 +2,7 @@
 ⚛️ 🧩  A picture puzzle component. Supports [**Android**](https://reactnative.dev), [**iOS**](https://reactnative.dev) and the [**Web**](https://github.com/necolas/react-native-web).
 
 <p align="center">
-  <img src="./public/logo.png"></img>
+  <img src="./public/logo.png" width="250" height="250"></img>
 </p>
 
 
