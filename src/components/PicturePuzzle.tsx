@@ -140,7 +140,9 @@ export default function PicturePuzzle({
   }, [source, loaded, piecesPerRow, hidden]);
 
   const onLoad = React.useCallback(() => {
+    // @ts-ignore
     window.setTimeout(
+      // @ts-ignore
       () => window.requestAnimationFrame(() => setLoaded(true)),
       10,
     );

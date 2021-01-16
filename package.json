@@ -7,6 +7,7 @@
   "author": "Alex Thomas (@cawfree) <hello@cawfree.com>",
   "license": "MIT",
   "private": false,
+  "types": "dist/index.d.ts",
   "keywords": [
     "react-native",
     "puzzle",
@@ -14,9 +15,13 @@
     "picture"
   ],
   "scripts": {
-    "build": "rm -rf dist ; yarn ; yarn tsc ; rm -rf node_modules"
+    "build": "rm -rf dist ; yarn ; yarn tsc ; babel dist --out-dir dist; rm -rf node_modules"
   },
   "devDependencies": {
+    "@babel/cli": "^7.12.10",
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "@babel/preset-react": "^7.12.10",
     "@types/react": "^17.0.0",
     "@types/react-native": "^0.63.45",
     "react": "^17.0.1",

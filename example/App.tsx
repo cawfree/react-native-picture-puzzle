@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, View, Button } from 'react-native';
-import { PicturePuzzle, PuzzlePieces } from './lib';
+import { PicturePuzzle, PuzzlePieces } from 'react-native-picture-puzzle';
 
 const styles = StyleSheet.create({
   center: {
