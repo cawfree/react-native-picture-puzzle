@@ -30,7 +30,7 @@ export default function App() {
   }), []);
   const renderLoading = React.useCallback((): JSX.Element => <ActivityIndicator />, []);
   const onChange = React.useCallback((nextPieces: PuzzlePieces, nextHidden: number | null): void => {
-    setPieces([...nextPieces]);
+    setPieces(nextPieces);
     setHidden(nextHidden);
   }, [setPieces, setHidden]);
   return (
