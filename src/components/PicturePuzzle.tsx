@@ -4,12 +4,16 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = PicturePuzzle;
+import { View, Animated, Image, TouchableWithoutFeedback, StyleSheet } from 'react-native';
+import ObscureView from './ObscureView';
+import GestureRecognizer from "react-native-swipe-detect";
 
 var React = _interopRequireWildcard(require("react"));
 
 var _reactNative = require("react-native");
 
 var _ObscureView = _interopRequireDefault(require("./ObscureView"));
+
 
 var _types = require("../types");
 
@@ -97,6 +101,8 @@ function PicturePuzzle(_ref) {
     return (0, _constants.throwOnInvalidPuzzlePieces)(pieces);
   }, [pieces]);
 
+
+
   var piecesPerRow = React.useMemo(function () {
     return Math.sqrt(pieces.length);
   }, [pieces.length]);
@@ -132,6 +138,7 @@ function PicturePuzzle(_ref) {
   }, [pieces, piecesPerRow]);
 
   var getMoveDirections = React.useCallback(function (pieceNumber) {
+
     var i = pieces.indexOf(pieceNumber);
     var bottom = i + piecesPerRow;
     var left = i - 1;
@@ -172,6 +179,7 @@ function PicturePuzzle(_ref) {
       throw new Error("[PicturePuzzle]: Expected hidden to resolve to a valid piece, but encountered ".concat(hidden, "."));
     }
   }, [hidden, pieces]);
+
 
   var onLoadStart = React.useCallback(function () {
     return setLoaded(false);
@@ -216,17 +224,19 @@ function PicturePuzzle(_ref) {
     return idx;
   }, [pieces, piecesPerRow]);
 
-  var shouldMovePiece = React.useCallback(function (pieceNumber) {
-    var maybeDirections = getMoveDirections(pieceNumber);
+  var shouldMovePiece = React.useCallback(function (pieceNumber, dir) {
+
+    var maybeDirections = getMoveDirections(pieceNumber, pieces);
+
     if (maybeDirections.length) {
       var _maybeDirections = _slicedToArray(maybeDirections, 1),
         direction = _maybeDirections[0];
-
+      if (dir && direction !== dir) {
+        return
+      }
       var idx = pieces.indexOf(pieceNumber);
       var nextPieceIndex = getNextPieceIndex(pieceNumber, direction);
-
       var nextPieces = _toConsumableArray(pieces);
-
       nextPieces[idx] = nextPieces[nextPieceIndex];
       nextPieces[nextPieceIndex] = pieceNumber;
       typeof onChange === 'function' && onChange(nextPieces, nextPieces[idx]);
@@ -234,67 +244,115 @@ function PicturePuzzle(_ref) {
   }, [getMoveDirections, pieces, onChange, hidden, getNextPieceIndex]);
 
   var actualSize = pieceSize * piecesPerRow;
-  return /*#__PURE__*/React.createElement(_reactNative.Animated.View, {
-    style: [_reactNative.StyleSheet.flatten(style), styles.noOverflow, {
-      width: actualSize,
-      height: actualSize
-    }]
-  }, /*#__PURE__*/React.createElement(_reactNative.View, {
-    style: _reactNative.StyleSheet.absoluteFill
-  }, /*#__PURE__*/React.createElement(_reactNative.Image, {
-    style: [{
-      width: actualSize,
-      height: actualSize
-    }, styles.absolute, styles.invisible],
-    source: source,
-    onLoadStart: onLoadStart,
-    onLoad: onLoad
-  }), /*#__PURE__*/React.createElement(_reactNative.Animated.View, {
-    style: [_reactNative.StyleSheet.absoluteFill, {
-      opacity: animLoadOpacity
-    }]
-  }, typeof renderLoading === 'function' && renderLoading()), _toConsumableArray(Array(piecesPerRow)).map(function (_, i) {
-    return /*#__PURE__*/React.createElement(_reactNative.View, {
-      style: [styles.row, styles.fullWidth],
-      key: "k".concat(i)
-    }, _toConsumableArray(Array(piecesPerRow)).map(function (_, j) {
-      var idx = i * piecesPerRow + j;
-      var opacity = consecutivePieceOpacities[idx];
-      var translate = consecutivePieceTranslations[idx];
-      var top = -i * pieceSize;
-      var bottom = -i * pieceSize + pieceSize;
-      var left = -j * pieceSize;
-      var right = -j * pieceSize + pieceSize;
-      var pieceNumber = i * piecesPerRow + j;
-      return /*#__PURE__*/React.createElement(_ObscureView["default"], {
-        key: "k".concat(j),
-        style: [styles.absolute, {
-          opacity: opacity,
-          transform: [{
-            scaleX: opacity
-          }, {
-            scaleY: opacity
-          }, {
-            translateX: translate.x
-          }, {
-            translateY: translate.y
-          }]
-        }],
-        top: top,
-        bottom: bottom,
-        left: left,
-        right: right
-      }, /*#__PURE__*/React.createElement(_reactNative.TouchableWithoutFeedback, {
-        onPress: function onPress() {
-          return shouldMovePiece(pieceNumber);
-        }
-      }, /*#__PURE__*/React.createElement(_reactNative.Image, {
-        style: {
-          width: actualSize,
-          height: actualSize
-        },
-        source: source
-      })));
-    }));
-  })));
+
+  const config = {
+    velocityThreshold: 0.1,
+    directionalOffsetThreshold: 80,
+  };
+
+  return (
+    <Animated.View style={
+      [StyleSheet.flatten(style), styles.noOverflow, {
+        width: actualSize,
+        height: actualSize
+      }]
+    }>
+      <View style={StyleSheet.absoluteFill}>
+        <Image
+          style={[{
+            width: actualSize,
+            height: actualSize
+          }, styles.absolute, styles.invisible]}
+          source={source}
+          onLoadStart={onLoadStart}
+          onLoad={onLoad}
+        />
+        <Animated.View
+          style={[
+            StyleSheet.absoluteFill,
+            // { opacity: animLoadOpacity }
+          ]}>
+          {/* {typeof renderLoading === 'function' && renderLoading()} */}
+          {_toConsumableArray(Array(piecesPerRow))?.map((_, i) => {
+            return (
+              <View
+                style={[styles.row, styles.fullWidth]}
+                key={"k".concat(i)}
+              >
+                {_toConsumableArray(Array(piecesPerRow))?.map((_, j?: any) => {
+                  var idx = i * piecesPerRow + j;
+                  var opacity = consecutivePieceOpacities[idx];
+                  var translate = consecutivePieceTranslations[idx];
+                  var top = -i * pieceSize;
+                  var bottom = -i * pieceSize + pieceSize;
+                  var left = -j * pieceSize;
+                  var right = -j * pieceSize + pieceSize;
+                  var pieceNumber = i * piecesPerRow + j;
+
+                  return (
+                    <ObscureView
+                      key={"k".concat(j)}
+                      style={[styles.absolute, {
+                        opacity: opacity,
+                        transform: [{
+                          scaleX: opacity
+                        }, {
+                          scaleY: opacity
+                        }, {
+                          translateX: translate.x
+                        }, {
+                          translateY: translate.y
+                        }],
+                      }]}
+                      top={top}
+                      bottom={bottom}
+                      left={left}
+                      right={right}
+                    >
+
+                      <GestureRecognizer
+                        onSwipe={(direction, state) => {
+                        }}
+                        onSwipeUp={(state) => {
+                          shouldMovePiece(pieceNumber, 'top')
+                        }}
+                        onSwipeDown={(state) => {
+                          shouldMovePiece(pieceNumber, 'bottom')
+                        }}
+                        onSwipeLeft={(state) => {
+                          shouldMovePiece(pieceNumber, 'left')
+                        }}
+                        onSwipeRight={(state) => {
+                          shouldMovePiece(pieceNumber, 'right')
+                        }}
+                        config={config}
+                        style={{
+                          flex: 1,
+                        }}
+                      >
+                        <TouchableWithoutFeedback
+                          onPress={() => {
+                            shouldMovePiece(pieceNumber)
+                          }}
+                        >
+                          <Image
+                            style={{
+                              width: actualSize, height: actualSize
+                            }}
+                            source={source}
+                          />
+                        </TouchableWithoutFeedback>
+                      </GestureRecognizer>
+
+                    </ObscureView>
+                  )
+                })}
+              </View>
+            )
+          })}
+        </Animated.View>
+      </View >
+
+    </Animated.View >
+  )
 }
