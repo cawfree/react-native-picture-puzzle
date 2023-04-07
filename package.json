@@ -1,7 +1,7 @@
 {
   "name": "react-native-picture-puzzle",
   "version": "1.0.0",
-  "description": "⚛️ 🧩 A picture puzzle component.",
+  "description": "⚛️ 🧩 A picture puzzle component(with swipe).",
   "main": "dist",
   "repository": "https://github.com/cawfree/react-native-picture-puzzle",
   "author": "Alex Thomas (@cawfree) <hello@cawfree.com>",
