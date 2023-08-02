@@ -7,6 +7,11 @@
   <img src="./public/logo.png" width="250" height="250"></img>
 </p>
 
+## Changes after fork
+- Introduces swipe feature
+- converts legacy code into jsx
+- Fixes unusial image jump from index 2to3 and 5to6 jumps
+
 
 ## 🚀 getting started
 
